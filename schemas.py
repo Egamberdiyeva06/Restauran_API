@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from enum import Enum
 
 class CategoryBase(BaseModel):
     name: str
@@ -7,7 +7,7 @@ class CategoryBase(BaseModel):
 class CategoryCreate(CategoryBase):
     pass
 
-class Category(CategoryBase):
+class CategoryOut(CategoryBase):
     id: int
 
     class Config:
@@ -22,9 +22,9 @@ class MenuItemBase(BaseModel):
 class MenuItemCreate(MenuItemBase):
     pass
 
-class MenuItem(MenuItemBase):
+class MenuItemOut(MenuItemBase):
     id: int
-    category: Category
+    category: CategoryOut
 
     class Config:
         from_attributes = True
@@ -32,16 +32,15 @@ class MenuItem(MenuItemBase):
 
 class OrderItemBase(BaseModel):
     quantity: int
-    total: int
     menu_item_id: int
-    order_id: int
 
 class OrderItemCreate(OrderItemBase):
     pass
 
-class OrderItem(OrderItemBase):
+class OrderItemOut(OrderItemBase):
     id: int
-    menu_item: MenuItem  
+    menu_item: MenuItemOut  
+    total: float
 
     class Config:
         from_atributes = True
@@ -49,15 +48,25 @@ class OrderItem(OrderItemBase):
 
 class OrderBase(BaseModel):
     adress: str
-    total: int
     phone_number: str
-    status: str
+
 
 class OrderCreate(OrderBase):
-    pass
+    items: list[OrderItemCreate]
 
-class Order(OrderBase):
+
+class OrderOut(OrderBase):
     id: int
-    order_items: List[OrderItem]
+    total: float
+    status: OrderStatus
+
     class Config:
         from_attributes = True
+
+
+class OrderStatus(str, Enum):
+    pending = "pending"
+    preparing = "preparing"
+    ready = "ready"
+    delivered = "delivered"
+    cancelled = "cancelled"

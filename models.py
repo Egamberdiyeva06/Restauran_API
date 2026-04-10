@@ -46,4 +46,4 @@ class Order(Base):
     phone_number: Mapped[str] = mapped_column(String(length=50))
     status: Mapped[str] = mapped_column(String(length=50))
 
-    order_items = Mapped[list['Order_Item']] = relationship('Order_Item', back_populates='order', cascade='all, delete-orphan')
+    order_items: Mapped[list['Order_Item']] = relationship('Order_Item', back_populates='order', cascade='all, delete-orphan')
