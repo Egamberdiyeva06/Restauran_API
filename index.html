@@ -1,218 +1,517 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uz">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Restaurant Pro Admin</title>
-<script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastAPI Admin Panel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; background-color: #f4f6f9; color: #333; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar */
+        .sidebar { width: 250px; background-color: #2c3e50; color: white; display: flex; flex-direction: column; }
+        .sidebar h2 { padding: 20px; text-align: center; background-color: #1a252f; letter-spacing: 1px; }
+        .nav-links { list-style: none; padding: 10px 0; }
+        .nav-links li { padding: 15px 20px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
+        .nav-links li:hover, .nav-links li.active { background-color: #34495e; border-left: 4px solid #3498db; }
+        
+        /* Main Content */
+        .main-content { flex: 1; padding: 20px; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .header h1 { font-size: 24px; color: #2c3e50; }
+        
+        /* Cards */
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; color: #2c3e50; }
+        tr:hover { background-color: #f1f1f1; }
+        
+        /* Buttons */
+        .btn { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .btn-primary { background-color: #3498db; color: white; }
+        .btn-primary:hover { background-color: #2980b9; }
+        .btn-danger { background-color: #e74c3c; color: white; }
+        .btn-danger:hover { background-color: #c0392b; }
+        .btn-warning { background-color: #f1c40f; color: black; }
+        .btn-warning:hover { background-color: #f39c12; color: white; }
+        .action-btns { display: flex; gap: 5px; }
+        
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .close-btn { cursor: pointer; font-size: 20px; color: #aaa; }
+        .close-btn:hover { color: #333; }
+        
+        /* Forms */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        
+        /* Status Badges */
+        .status { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .status.pending { background: #ffeaa7; color: #d63031; }
+        .status.preparing { background: #fab1a0; color: #d63031; }
+        .status.ready { background: #55efc4; color: #00b894; }
+        .status.delivered { background: #74b9ff; color: #0984e3; }
+        
+        /* Hide sections initially */
+        .section { display: none; }
+        .section.active { display: block; }
+    </style>
 </head>
+<body>
 
-<body class="bg-gray-100">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2><i class="fas fa-hamburger"></i> Restoran API</h2>
+        <ul class="nav-links">
+            <li class="active" onclick="switchTab('dashboard')"><i class="fas fa-home"></i> Bosh sahifa</li>
+            <li onclick="switchTab('categories')"><i class="fas fa-tags"></i> Kategoriyalar</li>
+            <li onclick="switchTab('menu-items')"><i class="fas fa-utensils"></i> Menyu</li>
+            <li onclick="switchTab('orders')"><i class="fas fa-shopping-cart"></i> Buyurtmalar</li>
+            <li onclick="switchTab('order-items')"><i class="fas fa-list"></i> Buyurtma elementlari</li>
+        </ul>
+    </div>
 
-<div class="flex h-screen">
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard -->
+        <div id="dashboard" class="section active">
+            <div class="header">
+                <h1>Boshqaruv Paneli</h1>
+            </div>
+            <div class="card">
+                <h3>Xush kelibsiz!</h3>
+                <p>Chap tarafdagi menyudan kerakli bo'limni tanlang.</p>
+            </div>
+        </div>
 
-  <!-- SIDEBAR -->
-  <aside class="w-64 bg-gray-900 text-white p-6">
-    <h1 class="text-2xl mb-6 font-bold">🍽 Admin</h1>
+        <!-- Kategoriyalar -->
+        <div id="categories" class="section">
+            <div class="header">
+                <h1>Kategoriyalar</h1>
+                <button class="btn btn-primary" onclick="openModal('categoryModal')"><i class="fas fa-plus"></i> Qo'shish</button>
+            </div>
+            <div class="card">
+                <table>
+                    <thead><tr><th>ID</th><th>Nomi</th></tr></thead>
+                    <tbody id="categoriesTableBody"></tbody>
+                </table>
+            </div>
+        </div>
 
-    <button onclick="openSection('category')" class="block w-full text-left p-2 hover:bg-gray-700 rounded">Categories</button>
-    <button onclick="openSection('menu')" class="block w-full text-left p-2 hover:bg-gray-700 rounded">Menu</button>
-    <button onclick="openSection('orderItem')" class="block w-full text-left p-2 hover:bg-gray-700 rounded">Order Items</button>
-    <button onclick="openSection('order')" class="block w-full text-left p-2 hover:bg-gray-700 rounded">Orders</button>
+        <!-- Menyu -->
+        <div id="menu-items" class="section">
+            <div class="header">
+                <h1>Menyu Elementlari</h1>
+                <button class="btn btn-primary" onclick="openModal('menuItemModal')"><i class="fas fa-plus"></i> Qo'shish</button>
+            </div>
+            <div class="card">
+                <table>
+                    <thead><tr><th>ID</th><th>Nomi</th><th>Narxi</th><th>Kategoriya</th></tr></thead>
+                    <tbody id="menuItemsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
 
-  </aside>
+        <!-- Buyurtmalar -->
+        <div id="orders" class="section">
+            <div class="header">
+                <h1>Buyurtmalar</h1>
+                <button class="btn btn-primary" onclick="openModal('orderModal')"><i class="fas fa-plus"></i> Yangi Buyurtma</button>
+            </div>
+            <div class="card">
+                <table>
+                    <thead><tr><th>ID</th><th>Manzil</th><th>Telefon</th><th>Jami summa</th><th>Holati</th><th>Amallar</th></tr></thead>
+                    <tbody id="ordersTableBody"></tbody>
+                </table>
+            </div>
+        </div>
 
-  <!-- CONTENT -->
-  <main class="flex-1 p-6 overflow-auto">
+        <!-- Buyurtma Elementlari -->
+        <div id="order-items" class="section">
+            <div class="header">
+                <h1>Buyurtma Elementlari (Items)</h1>
+                <button class="btn btn-primary" onclick="openModal('orderItemModal')"><i class="fas fa-plus"></i> Element Qo'shish</button>
+            </div>
+            <div class="card">
+                <table>
+                    <thead><tr><th>ID</th><th>Taom nomi</th><th>Miqdor</th><th>Summa</th><th>Amallar (PUT/DELETE)</th></tr></thead>
+                    <tbody id="orderItemsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-    <!-- CATEGORY -->
-    <section id="category" class="hidden">
-      <h2 class="text-xl font-bold mb-4">Categories</h2>
+    <!-- MODALS (QO'SHISH VA TAHRIRLASH UCHUN) -->
 
-      <input id="catName" class="border p-2" placeholder="Name"/>
-      <button onclick="createCategory()" class="bg-blue-600 text-white px-4 py-2">Add</button>
+    <!-- Kategoriya qo'shish -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Yangi kategoriya</h3>
+                <span class="close-btn" onclick="closeModal('categoryModal')">&times;</span>
+            </div>
+            <form id="categoryForm" onsubmit="createCategory(event)">
+                <div class="form-group">
+                    <label>Kategoriya nomi:</label>
+                    <input type="text" id="catName" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Saqlash</button>
+            </form>
+        </div>
+    </div>
 
-      <div id="catList" class="mt-4"></div>
-    </section>
+    <!-- Taom qo'shish -->
+    <div id="menuItemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Yangi taom qo'shish</h3>
+                <span class="close-btn" onclick="closeModal('menuItemModal')">&times;</span>
+            </div>
+            <form id="menuItemForm" onsubmit="createMenuItem(event)">
+                <div class="form-group">
+                    <label>Taom nomi:</label>
+                    <input type="text" id="menuName" required>
+                </div>
+                <div class="form-group">
+                    <label>Narxi (so'm):</label>
+                    <input type="number" id="menuPrice" required>
+                </div>
+                <div class="form-group">
+                    <label>Kategoriya:</label>
+                    <select id="menuCategorySelect" required></select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Saqlash</button>
+            </form>
+        </div>
+    </div>
 
-    <!-- MENU -->
-    <section id="menu" class="hidden">
-      <h2 class="text-xl font-bold mb-4">Menu</h2>
+    <!-- Buyurtma Statusini Tahrirlash (PATCH) -->
+    <div id="orderStatusModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Statusni o'zgartirish (PATCH)</h3>
+                <span class="close-btn" onclick="closeModal('orderStatusModal')">&times;</span>
+            </div>
+            <form id="orderStatusForm" onsubmit="updateOrderStatus(event)">
+                <input type="hidden" id="statusOrderId">
+                <div class="form-group">
+                    <label>Yangi holat:</label>
+                    <select id="newOrderStatus" required>
+                        <option value="pending">Kutilmoqda (pending)</option>
+                        <option value="preparing">Tayyorlanmoqda (preparing)</option>
+                        <option value="ready">Tayyor (ready)</option>
+                        <option value="delivered">Yetkazildi (delivered)</option>
+                        <option value="cancelled">Bekor qilindi (cancelled)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Yangilash</button>
+            </form>
+        </div>
+    </div>
 
-      <input id="menuName" class="border p-2" placeholder="Name"/>
-      <input id="menuPrice" class="border p-2" placeholder="Price"/>
-      <select id="menuCategory" class="border p-2"></select>
+    <!-- Buyurtma Elementini TAHRIRLASH (PUT) -->
+    <div id="editOrderItemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Elementni Tahrirlash (PUT)</h3>
+                <span class="close-btn" onclick="closeModal('editOrderItemModal')">&times;</span>
+            </div>
+            <form id="editOrderItemForm" onsubmit="submitEditOrderItem(event)">
+                <input type="hidden" id="editItemId"> <!-- Yashirin ID -->
+                
+                <div class="form-group">
+                    <label>Qaysi Buyurtmaga (Order ID):</label>
+                    <input type="number" id="editOrderRefId" required placeholder="Masalan: 1">
+                    <small style="color:gray;">(Qaysi raqamli buyurtmaga tegishliligini yozing)</small>
+                </div>
+                <div class="form-group">
+                    <label>Yangi Taomni tanlang:</label>
+                    <select id="editItemMenuSelect" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Yangi Miqdor (dona):</label>
+                    <input type="number" id="editItemQuantity" required min="1">
+                </div>
+                <button type="submit" class="btn btn-warning" style="width:100%">O'zgarishlarni Saqlash</button>
+            </form>
+        </div>
+    </div>
 
-      <button onclick="createMenu()" class="bg-green-600 text-white px-4 py-2">Add</button>
+    <!-- YANGI Buyurtma yaratish -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content" style="width: 500px;">
+            <div class="modal-header">
+                <h3>Yangi buyurtma</h3>
+                <span class="close-btn" onclick="closeModal('orderModal')">&times;</span>
+            </div>
+            <form id="orderForm" onsubmit="createOrder(event)">
+                <div class="form-group">
+                    <label>Manzil:</label>
+                    <input type="text" id="orderAddress" required>
+                </div>
+                <div class="form-group">
+                    <label>Telefon:</label>
+                    <input type="text" id="orderPhone" required>
+                </div>
+                
+                <hr style="margin:15px 0;">
+                <h4>Taomlar</h4>
+                <div id="orderItemsContainer">
+                    <div class="form-group" style="display:flex; gap:10px;">
+                        <select class="order-menu-select" required style="flex:2;"></select>
+                        <input type="number" class="order-quantity" placeholder="Miqdor" min="1" required style="flex:1;">
+                    </div>
+                </div>
+                <button type="button" class="btn" onclick="addOrderItemField()" style="margin-bottom: 15px;">+ Yana taom qo'shish</button>
+                
+                <button type="submit" class="btn btn-primary" style="width:100%">Buyurtmani tasdiqlash</button>
+            </form>
+        </div>
+    </div>
 
-      <div id="menuList" class="mt-4"></div>
-    </section>
+    <!-- JAVASCRIPT QISMI -->
+    <script>
+        const API_URL = 'http://127.0.0.1:8000/api';
 
-    <!-- ORDER ITEMS -->
-    <section id="orderItem" class="hidden">
-      <h2 class="text-xl font-bold mb-4">Order Items</h2>
+        // 1. Tablarni almashtirish
+        function switchTab(tabId) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
 
-      <select id="oiOrderId" class="border p-2"></select>
-      <select id="oiMenuId" class="border p-2"></select>
-      <input id="oiQty" class="border p-2" placeholder="Qty"/>
+            if(tabId === 'categories') fetchCategories();
+            if(tabId === 'menu-items') fetchMenuItems();
+            if(tabId === 'orders') fetchOrders();
+            if(tabId === 'order-items') fetchOrderItems();
+        }
 
-      <button onclick="createOrderItem()" class="bg-yellow-500 px-4 py-2">Add</button>
+        // 2. Modallarni ochish/yopish
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-      <div id="oiList" class="mt-4"></div>
-    </section>
+        // ================= KATEGORIYALAR =================
+        async function fetchCategories() {
+            const res = await fetch(`${API_URL}/categories/`);
+            const data = await res.json();
+            const tbody = document.getElementById('categoriesTableBody');
+            tbody.innerHTML = '';
+            data.forEach(cat => {
+                tbody.innerHTML += `<tr><td>${cat.id}</td><td>${cat.name}</td></tr>`;
+            });
+            
+            // Selectlarni to'ldirish
+            const select = document.getElementById('menuCategorySelect');
+            select.innerHTML = data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        }
 
-    <!-- ORDERS -->
-    <section id="order" class="hidden">
-      <h2 class="text-xl font-bold mb-4">Orders</h2>
+        async function createCategory(e) {
+            e.preventDefault();
+            const name = document.getElementById('catName').value;
+            await fetch(`${API_URL}/categories/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name })
+            });
+            closeModal('categoryModal');
+            document.getElementById('categoryForm').reset();
+            fetchCategories();
+        }
 
-      <input id="address" class="border p-2" placeholder="Address"/>
-      <input id="phone" class="border p-2" placeholder="Phone"/>
+        // ================= MENYU ELEMENTLARI =================
+        async function fetchMenuItems() {
+            const res = await fetch(`${API_URL}/menu_items/`);
+            const data = await res.json();
+            const tbody = document.getElementById('menuItemsTableBody');
+            tbody.innerHTML = '';
+            
+            let optionsHTML = '';
+            data.forEach(item => {
+                tbody.innerHTML += `<tr><td>${item.id}</td><td>${item.name}</td><td>${item.price} so'm</td><td>${item.category.name}</td></tr>`;
+                optionsHTML += `<option value="${item.id}">${item.name} (${item.price} so'm)</option>`;
+            });
 
-      <button onclick="createOrder()" class="bg-purple-600 text-white px-4 py-2">Create</button>
+            // Buyurtma formasi va Tahrirlash (PUT) formasi uchun selectlarni to'ldirish
+            document.querySelectorAll('.order-menu-select').forEach(el => el.innerHTML = optionsHTML);
+            document.getElementById('editItemMenuSelect').innerHTML = optionsHTML;
+        }
 
-      <div id="orderList" class="mt-4"></div>
-    </section>
+        async function createMenuItem(e) {
+            e.preventDefault();
+            const body = {
+                name: document.getElementById('menuName').value,
+                price: parseInt(document.getElementById('menuPrice').value),
+                category_id: parseInt(document.getElementById('menuCategorySelect').value)
+            };
+            await fetch(`${API_URL}/menu_items/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            closeModal('menuItemModal');
+            document.getElementById('menuItemForm').reset();
+            fetchMenuItems();
+        }
 
-  </main>
-</div>
+        // ================= BUYURTMALAR =================
+        async function fetchOrders() {
+            const res = await fetch(`${API_URL}/orders/`);
+            const data = await res.json();
+            const tbody = document.getElementById('ordersTableBody');
+            tbody.innerHTML = '';
+            data.forEach(order => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${order.id}</td>
+                        <td>${order.adress}</td>
+                        <td>${order.phone_number}</td>
+                        <td>${order.total} so'm</td>
+                        <td><span class="status ${order.status}">${order.status}</span></td>
+                        <td>
+                            <button class="btn btn-warning" onclick="openStatusModal(${order.id}, '${order.status}')">Status (PATCH)</button>
+                        </td>
+                    </tr>`;
+            });
+        }
 
-<script>
-const API = "http://127.0.0.1:8000/api";
+        function openStatusModal(id, currentStatus) {
+            document.getElementById('statusOrderId').value = id;
+            document.getElementById('newOrderStatus').value = currentStatus;
+            openModal('orderStatusModal');
+        }
 
-function openSection(id){
-  document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
+        async function updateOrderStatus(e) {
+            e.preventDefault();
+            const id = document.getElementById('statusOrderId').value;
+            const status = document.getElementById('newOrderStatus').value;
+            
+            await fetch(`${API_URL}/orders/${id}/status?status=${status}`, { method: 'PATCH' });
+            closeModal('orderStatusModal');
+            fetchOrders();
+        }
 
-/* CATEGORY */
-async function loadCategories(){
-  const res = await fetch(`${API}/categories/`);
-  const data = await res.json();
+        function addOrderItemField() {
+            const container = document.getElementById('orderItemsContainer');
+            const options = document.querySelector('.order-menu-select').innerHTML;
+            container.innerHTML += `
+                <div class="form-group" style="display:flex; gap:10px; margin-top:10px;">
+                    <select class="order-menu-select" required style="flex:2;">${options}</select>
+                    <input type="number" class="order-quantity" placeholder="Miqdor" min="1" required style="flex:1;">
+                    <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">X</button>
+                </div>`;
+        }
 
-  document.getElementById('catList').innerHTML =
-    data.map(c=>`<div class="bg-white p-2 m-2">${c.name}</div>`).join('');
+        async function createOrder(e) {
+            e.preventDefault();
+            const items = [];
+            document.querySelectorAll('#orderItemsContainer .form-group').forEach(group => {
+                items.push({
+                    menu_item_id: parseInt(group.querySelector('.order-menu-select').value),
+                    quantity: parseInt(group.querySelector('.order-quantity').value),
+                    order_id: 1 // Backend dagi schema xatosi uchun default qiymat
+                });
+            });
 
-  document.getElementById('menuCategory').innerHTML =
-    data.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-}
+            const body = {
+                adress: document.getElementById('orderAddress').value,
+                phone_number: document.getElementById('orderPhone').value,
+                items: items
+            };
 
-async function createCategory(){
-  await fetch(`${API}/categories/`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({name:catName.value})
-  });
-  loadCategories();
-}
+            await fetch(`${API_URL}/orders/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            closeModal('orderModal');
+            document.getElementById('orderForm').reset();
+            fetchOrders();
+        }
 
-/* MENU */
-async function loadMenu(){
-  const res = await fetch(`${API}/menu_items/`);
-  const data = await res.json();
+        // ================= BUYURTMA ELEMENTLARI (ORDER ITEMS PUT/DELETE) =================
+        async function fetchOrderItems() {
+            const res = await fetch(`${API_URL}/order_items/`);
+            const data = await res.json();
+            const tbody = document.getElementById('orderItemsTableBody');
+            tbody.innerHTML = '';
+            
+            // Backenddan order_id kelmagani uchun tahrirlash tugmasiga faqat qolganlarini uzatamiz
+            data.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.menu_item.name}</td>
+                        <td>${item.quantity} dona</td>
+                        <td>${item.total} so'm</td>
+                        <td class="action-btns">
+                            <button class="btn btn-warning" onclick="openEditItemModal(${item.id}, ${item.menu_item.id}, ${item.quantity})"><i class="fas fa-edit"></i> PUT</button>
+                            <button class="btn btn-danger" onclick="deleteOrderItem(${item.id})"><i class="fas fa-trash"></i> DELETE</button>
+                        </td>
+                    </tr>`;
+            });
+        }
 
-  document.getElementById('menuList').innerHTML =
-    data.map(m=>`<div class="bg-white p-2 m-2">${m.name} - ${m.price}</div>`).join('');
+        // 1. PUT uchun modalni ochish va eski ma'lumotlarni joylash
+        function openEditItemModal(itemId, menuId, quantity) {
+            document.getElementById('editItemId').value = itemId;
+            document.getElementById('editItemMenuSelect').value = menuId;
+            document.getElementById('editItemQuantity').value = quantity;
+            // orderId ni backend javobida bermaganingiz uchun user qo'lda kiritishi kerak:
+            document.getElementById('editOrderRefId').value = ""; 
+            openModal('editOrderItemModal');
+        }
 
-  document.getElementById('oiMenuId').innerHTML =
-    data.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-}
+        // 2. PUT so'rovini yuborish
+        async function submitEditOrderItem(e) {
+            e.preventDefault();
+            const id = document.getElementById('editItemId').value;
+            
+            // Yig'ilgan qo'lda kiritilgan ma'lumotlar
+            const body = {
+                order_id: parseInt(document.getElementById('editOrderRefId').value), // Buni schema ga qo'shish kerak!
+                menu_item_id: parseInt(document.getElementById('editItemMenuSelect').value),
+                quantity: parseInt(document.getElementById('editItemQuantity').value)
+            };
 
-async function createMenu(){
-  await fetch(`${API}/menu_items/`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      name:menuName.value,
-      price:menuPrice.value,
-      category_id:menuCategory.value
-    })
-  });
-  loadMenu();
-}
+            try {
+                const res = await fetch(`${API_URL}/order_items/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
 
-/* ORDER ITEM */
-async function loadOrderItems(){
-  const res = await fetch(`${API}/order_items/`);
-  const data = await res.json();
+                if(res.ok) {
+                    alert("Muvaffaqiyatli tahrirlandi!");
+                    closeModal('editOrderItemModal');
+                    fetchOrderItems();
+                } else {
+                    const err = await res.json();
+                    alert("Xatolik: " + JSON.stringify(err));
+                }
+            } catch (error) {
+                console.error(error);
+                alert("So'rovda xatolik yuz berdi. Backend kodingizni tekshiring.");
+            }
+        }
 
-  document.getElementById('oiList').innerHTML =
-    data.map(o=>`
-      <div class="bg-white p-2 m-2">
-        Menu:${o.menu_item_id} | Qty:${o.quantity} | Total:${o.total}
-        <button onclick="deleteOrderItem(${o.id})" class="bg-red-500 text-white px-2">X</button>
-      </div>
-    `).join('');
-}
+        // DELETE so'rovi
+        async function deleteOrderItem(id) {
+            if(confirm("Haqiqatan ham bu elementni o'chirmoqchimisiz?")) {
+                await fetch(`${API_URL}/order_items/${id}`, { method: 'DELETE' });
+                fetchOrderItems();
+            }
+        }
 
-async function createOrderItem(){
-  await fetch(`${API}/order_items/`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      order_id:oiOrderId.value,
-      menu_item_id:oiMenuId.value,
-      quantity:Number(oiQty.value)
-    })
-  });
-  loadOrderItems();
-}
-
-async function deleteOrderItem(id){
-  await fetch(`${API}/order_items/${id}`,{method:"DELETE"});
-  loadOrderItems();
-}
-
-/* ORDERS */
-async function loadOrders(){
-  const res = await fetch(`${API}/orders/`);
-  const data = await res.json();
-
-  document.getElementById('orderList').innerHTML =
-    data.map(o=>`
-      <div class="bg-white p-2 m-2">
-        <b>Order #${o.id}</b><br>
-        Total: ${o.total}<br>
-        Status: ${o.status}
-
-        <select onchange="updateStatus(${o.id},this.value)">
-          <option>pending</option>
-          <option>processing</option>
-          <option>delivered</option>
-        </select>
-      </div>
-    `).join('');
-}
-
-async function updateStatus(id,status){
-  await fetch(`${API}/orders/${id}/status`,{
-    method:"PATCH",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(status)
-  });
-  loadOrders();
-}
-
-async function createOrder(){
-  await fetch(`${API}/orders/`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      adress:address.value,
-      phone_number:phone.value,
-      items:[]
-    })
-  });
-  loadOrders();
-}
-
-/* INIT */
-openSection('category');
-loadCategories();
-loadMenu();
-loadOrders();
-loadOrderItems();
-
-</script>
-
+        // Boshlang'ich datalarni yuklash
+        fetchCategories();
+        fetchMenuItems();
+    </script>
 </body>
 </html>
